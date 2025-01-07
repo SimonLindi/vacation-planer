@@ -62,7 +62,7 @@ async function getDestinationsFromTrip(trip_id) {
           // Finde alle Destinationen, die im Trip enthalten sind
           destinations = await destinationsCollection
               .find({ destination_id: { $in: trip.destination_list } })
-              .project({ name: 1, _id: 0 }) // Nur `name` zurückgeben
+              .project({ name: 1, destination_id: 1, _id: 0 }) // Nur `name` zurückgeben
               .toArray();
           console.log("Destinationen gefunden:", destinations);
       } else {
@@ -76,21 +76,20 @@ async function getDestinationsFromTrip(trip_id) {
 
 
 // Get all countries
-async function getCountries() {
-  let countries = [];
+async function getAllCountries() {
   try {
-    const collection = db.collection("countries");
-    countries = await collection.find({}).toArray();
-
-    countries.forEach((country) => {
-      country._id = country._id.toString(); // Konvertiere ObjectId zu String
-    });
+    const countriesCollection = db.collection("countries");
+    const countries = await countriesCollection
+      .find()
+      .project({ country_name: 1, country_id: 1, _id: 0 }) // Nur benötigte Felder abrufen
+      .toArray();
+    return countries;
   } catch (error) {
-    console.log("Error in getCountries:", error.message);
-    throw error;
+    console.error("Error fetching all countries:", error);
+    return [];
   }
-  return countries;
 }
+
 
 async function getDestinationsByCountryName(countryName) {
   try {
@@ -156,6 +155,42 @@ async function updateTrip(trip) {
   }
 }
 
+// Get all destinations
+async function getAllDestinations() {
+  try {
+    const destinationsCollection = db.collection("destinations");
+    const destinations = await destinationsCollection
+      .find()
+      .project({ name: 1, destination_id: 1, _id: 0 }) // Nur benötigte Felder
+      .toArray();
+    return destinations;
+  } catch (error) {
+    console.error("Error fetching all destinations:", error);
+    return [];
+  }
+}
+
+// Get destination by destination_id
+async function getDestinationById(destinationId) {
+  try {
+    const destinationsCollection = db.collection("destinations");
+    const destination = await destinationsCollection.findOne(
+      {
+        destination_id: destinationId
+      },
+      {
+        projection: { _id: 0 } // Alles außer _id anzeigen
+      }
+    );
+    return destination;
+  } catch (error) {
+    console.error("Error fetching destination by ID:", error);
+    return null;
+  }
+}
+
+
+
 // Delete a trip
 async function deleteTrip(id) {
   try {
@@ -179,7 +214,9 @@ async function deleteTrip(id) {
 export default {
   getTrips,
   getTripById,
-  getCountries,
+  getAllCountries,
+  getAllDestinations,
+  getDestinationById,
   getDestinationsByCountryName,
   createTrip,
   updateTrip,

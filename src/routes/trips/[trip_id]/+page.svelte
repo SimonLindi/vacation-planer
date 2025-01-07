@@ -40,9 +40,7 @@
                             <tr>
                                 <td>{destination.name}</td>
                                 <td>
-                                    <a href={`/destinations/${encodeURIComponent(destination.destination_id)}`}>
-                                        Details
-                                    </a>
+                                    <a href={`/destinations/${encodeURIComponent(destination.destination_id)}`}>Details</a>
                                 </td>
                             </tr>
                         {/each}

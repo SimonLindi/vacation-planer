@@ -3,21 +3,21 @@
   </script>
   
   <div class="container mt-5">
-    <h1 class="mb-4">All Countries</h1>
+    <h1 class="mb-4">All Destinations</h1>
     
     <table class="table table-bordered table-hover">
       <thead class="table-light">
         <tr>
-          <th>Country Name</th>
+          <th>Destination Name</th>
           <th>Details</th>
         </tr>
       </thead>
       <tbody>
-        {#each data.countries as country}
+        {#each data.destinations as destination}
           <tr>
-            <td>{country.country_name}</td>
+            <td>{destination.name}</td>
             <td>
-              <a href="/countries/{country.country_name}" class="btn btn-primary btn-sm">View Destinations</a>
+                <a href="/destinations/{encodeURIComponent(destination.destination_id)}" class="btn btn-primary btn-sm">View Details</a>
             </td>
           </tr>
         {/each}
