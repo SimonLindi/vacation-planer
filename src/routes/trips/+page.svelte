@@ -17,7 +17,7 @@
         {#each trips as trip}
             <tr>
                 <td>
-                    <a href={"/trips/" + trip.trip_id}>trip details</a>
+                    <a href={"/trips/" + trip._id}>trip details</a>
                 </td>
                 <td>
                     <h1>{trip.trip_name}</h1>

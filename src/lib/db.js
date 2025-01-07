@@ -45,6 +45,36 @@ async function getTripById(id) {
   return trip;
 }
 
+// Get destinations for a specific trip
+async function getDestinationsFromTrip(trip_id) {
+  let destinations = [];
+  try {
+      const tripsCollection = db.collection("trips");
+      const destinationsCollection = db.collection("destinations");
+
+      // Hole den Trip anhand der ID
+      const trip = await tripsCollection.findOne({ _id: new ObjectId(trip_id) });
+      console.log("Trip gefunden:", trip);
+
+      if (trip && trip.destination_list && trip.destination_list.length > 0) {
+          console.log("Destination IDs:", trip.destination_list);
+
+          // Finde alle Destinationen, die im Trip enthalten sind
+          destinations = await destinationsCollection
+              .find({ destination_id: { $in: trip.destination_list } })
+              .project({ name: 1, _id: 0 }) // Nur `name` zurückgeben
+              .toArray();
+          console.log("Destinationen gefunden:", destinations);
+      } else {
+          console.log("Keine Destinationen gefunden oder `destination_list` leer.");
+      }
+  } catch (error) {
+      console.log("Fehler in getDestinationsFromTrip:", error.message);
+  }
+  return destinations;
+}
+
+
 // Get all countries
 async function getCountries() {
   let countries = [];
@@ -62,23 +92,36 @@ async function getCountries() {
   return countries;
 }
 
-// Get destinations for a specific country
-async function getDestinationsByCountryId(country_id) {
-  let destinations = [];
+async function getDestinationsByCountryName(countryName) {
   try {
-    const collection = db.collection("destinations");
-    const query = { country_id: country_id }; // Filter nach country_id
-    destinations = await collection.find(query).toArray();
+      const countriesCollection = db.collection("countries");
+      const destinationsCollection = db.collection("destinations");
 
-    destinations.forEach((destination) => {
-      destination._id = destination._id.toString(); // Konvertiere ObjectId zu String
-    });
+      // Finde die Country-ID anhand des Namens
+      const country = await countriesCollection.findOne({ country_name: countryName });
+      if (!country) {
+          console.error("Country not found for name:", countryName);
+          return [];
+      }
+      console.log("Country ID gefunden:", country.country_id);
+
+      // Finde die Destinations anhand der Country-ID
+      const destinations = await destinationsCollection
+          .find({ country_id: country.country_id })
+          .project({ name: 1, description: 1, coordinates: 1, destination_id: 1, _id: 0 }) // Felder, die zurückgegeben werden
+          .toArray();
+      console.log("Gefundene Destinations:", destinations);
+
+      return destinations;
   } catch (error) {
-    console.log("Error in getDestinationsByCountryId:", error.message);
-    throw error;
+      console.error("Error in getDestinationsByCountryName:", error);
+      return [];
   }
-  return destinations;
 }
+
+
+
+
 
 // Create a new trip
 async function createTrip(trip) {
@@ -137,8 +180,9 @@ export default {
   getTrips,
   getTripById,
   getCountries,
-  getDestinationsByCountryId,
+  getDestinationsByCountryName,
   createTrip,
   updateTrip,
+  getDestinationsFromTrip,
   deleteTrip
 };
